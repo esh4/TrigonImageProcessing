@@ -11,7 +11,7 @@ cv2.imwrite('output.jpg', frame)
 
 serv.sendImageFile(open('output.jpg', 'rb'))
 
-
+#--------------HI
 
 
 
