@@ -1,12 +1,20 @@
-import numpy
 import cv2
-import FilterHSV as fHSV
+from server import ComProtocol
+#from FilterHSV import FiltHSVs
 
-while (True):
-    frame = cv2.VideoCapture(-1)
+serv = ComProtocol(5990)
+serv.conn()
 
-    frame.set(3, 320)
-    frame.set(4, 240)
+cam = cv2.VideoCapture(0)       #create camera object
+tf, frame = cam.read()          #read pic from cam
+cv2.imwrite('output.jpg', frame)
 
-    #cv2.namedWindow("Image")
-    #cv2.imshow("Image")
+serv.sendImageFile(open('output.jpg', 'rb'))
+
+
+
+
+
+
+
+cam.release()
