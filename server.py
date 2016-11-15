@@ -49,7 +49,9 @@ class ComProtocol:
             if len(a) == 100 or len(a)>100:
                 self.conn.send(a)
                 a = ''
+                a += n
             else:
-                a+=n
+                a += n
         print 'done'
         self.conn.send('done')
+        img.close()
