@@ -1,8 +1,6 @@
 import socket
 import cv2
 
-
-
 msg = raw_input("->")
 
 s = socket.socket()

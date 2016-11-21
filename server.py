@@ -1,32 +1,7 @@
 import socket
 import numpy as np
 import cv2
-'''def main():
-    capWebcam = cv2.VideoCapture(0)
-    
-    if not capWebcam.isOpened():
-        print "Webcam not accessed successfully \n\n"
-        os.system("pause")
-        return
-    out = cv2.VideoWriter('output.avi', -1, 20.0, (640,480))
-    while cv2.waitKey(1)!= 27 and capWebcam.isOpened():
-        frameRead, frame = capWebcam.read()
-        
-        if not frameRead or frame is None:
-            print "no image avialable\n"
-            os.system("pause")
-            break
-        
-        cv2.namedWindow("VideoFeed", cv2.WINDOW_NORMAL)
-        
-        cv2.imshow("VideoFeed", frame)
-        out.write(frame)
-        
 
-
-
-if __name__ == "__main__":
-    main()'''
 class ComProtocol:
     def __init__(self, port):
         self.port = port
@@ -41,7 +16,7 @@ class ComProtocol:
         self.conn = conn
         print address
 
-    #def SendVideo(self):
+    #def SendVideoFeed(self):
 
     def sendImageFile(self, img):
         a = ''
