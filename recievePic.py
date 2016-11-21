@@ -20,6 +20,9 @@ while True:
 
 img.close()
 
+img = open("input.jpg", 'r')
+cv2.namedWindow("picture")
+cv2.imshow("picture", img)
 
 
 s.close()
