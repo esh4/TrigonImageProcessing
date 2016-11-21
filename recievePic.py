@@ -1,10 +1,11 @@
 import socket
 import cv2
+from PIL import Image
 
 msg = raw_input("->")
 
 s = socket.socket()
-s.connect(('192.168.1.100', 5990))
+s.connect(('127.0.0.1', 5990))
 
 print "Connected!"
 
@@ -13,14 +14,13 @@ s.send(msg)
 while True:
     data = s.recv(100)
     if data == "done":
+        img.write(data)
         break
     img.write(data)
 
 img.close()
 
-img = open("input.jpg", 'r')
-cv2.namedWindow("picture")
-cv2.imshow("picture", img)
-
+im = Image.open("input.jpg")
+im.show()
 
 s.close()
