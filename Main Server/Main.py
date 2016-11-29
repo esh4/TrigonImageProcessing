@@ -1,5 +1,5 @@
 import cv2
-from server import ComProtocol
+from server import ComProtocol, FilterImage
 #from FilterHSV import FiltHSVs
 
 serv = ComProtocol(5990)
@@ -7,8 +7,13 @@ serv.conn()
 
 cam = cv2.VideoCapture(0)       #create camera object
 tf, frame = cam.read()          #read pic from cam
-cv2.imwrite('output.jpg', frame)
+cam.release()
+FiltIMG = FilterImage()
+
+imgHSV = FiltIMG.filterBar(frame)
+
+cv2.imwrite('output.jpg', imgHSV)
+#cv2.imwrite('output.jpg', frame)
 
 serv.sendImageFile(open('output.jpg', 'rb'))
 
-cam.release()

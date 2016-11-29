@@ -21,12 +21,24 @@ class ComProtocol:
     def sendImageFile(self, img):
         a = ''
         for n in img:
-            if len(a) == 100 or len(a)>100:
+            if len(a) == 100 or len(a) > 100:
                 self.conn.send(a)
                 a = ''
                 a += n
             else:
                 a += n
+        self.conn.send(a)
         print 'done'
-        self.conn.send('done')
+        self.conn.send("done")
         img.close()
+
+
+class FilterImage:
+    def __init__(self):
+        pass
+
+    def filterBar(self, img):
+        HSVimg = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+        filtHSVimg = cv2.inRange(HSVimg,(45, 44, 177), (83, 183, 240))
+
+        return filtHSVimg
