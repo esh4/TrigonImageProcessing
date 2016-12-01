@@ -2,7 +2,6 @@ import cv2
 from server import ComProtocol, FilterImage
 #from FilterHSV import FiltHSVs
 
-
 serv = ComProtocol(5990)
 serv.conn()
 
