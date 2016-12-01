@@ -41,16 +41,19 @@ class ProcessImage:
 
     def filterImg(self, img):
         HSVimg = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-        filtHSVimg = cv2.inRange(HSVimg,HSVvalues)
+        filtHSVimg = cv2.inRange(HSVimg, HSVvalues)
         return filtHSVimg
 
     def contourReport(self, img):
-        contours = cv2.findContours(img)
+        contours = cv2.findContours(img, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+        maxSize = 0
         for i in contours:
-            pass #find all the info for each contour,
+            if cv2.contourArea(contours[i]) > maxSize:
+                correctCont = contours[i]
+                #find all the info for each contour,
         #find correct contour.
         #return contour info.
-        pass
+        return correctCont
 
 class Comms:
     def __init__(self):
