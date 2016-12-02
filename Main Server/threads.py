@@ -21,23 +21,33 @@ class Debug:
         self.conn = conn
         print address
 
+    def getCommands(self):
+        return self.conn.recv(1024)
+
     def sendImage(self, img):
         a = ''
-        for n in img:
-            if len(a) == 100 or len(a) > 100:
-                self.conn.send(a)
-                a = ''
-                a += n
-            else:
-                a += n
-        self.conn.send(a)
-        print 'done'
-        self.conn.send("done")
-        img.close()
+        if self.conn.recv(100) == "pic":
+            for n in img:
+                if len(a) == 100 or len(a) > 100:
+                    self.conn.send(a)
+                    a = ''
+                    a += n
+                else:
+                    a += n
+            self.conn.send(a)
+            print 'done'
+            self.conn.send("done")
+            img.close()
 
 class ProcessImage:
     def __init__(self):
         pass
+
+    def capImg(self, camIdex):
+        cam = cv2.VideoCapture(0)
+        tr, frame = cam.read()
+        cam.release()
+        return frame
 
     def filterImg(self, img):
         HSVimg = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
