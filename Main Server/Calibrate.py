@@ -25,6 +25,8 @@ class Calib(threading.Thread):
         getCommands returns the following list:
             [(LH, LS, LV), (UH, US, UV), getImage, getHSVimg]
         '''
+        print "func ", func
+
         if func[0] == (-1, -1, -1): pass
         else: HSV_lowThresh = func[0]
 
@@ -55,25 +57,29 @@ class Calib(threading.Thread):
 
     def getCommands(self, command=-1):
         PCin = self.conn.recv(1024).split(', ')
-
+        print PCin
         lThresh = ()
         hThresh = ()
 
         out = []
 
         for i in range(3):
-            lThresh += int(i),
+            lThresh += int(i+1),
 
         for i in range(3, 6):
-            hThresh += int(i),
+            hThresh += int(i+1),
 
         out.append(lThresh)
         out.append(hThresh)
 
-        for i in range(6, 7):
-            out.append(bool(i))
+        for i in range(6, 8):
+            out.append(self.checkBool(i))
 
         return out
+
+    def checkBool(self, i):
+        if i == 't': return True
+        elif i == 'f': return False
 
     def saveImg(self, img):
         cv2.imwrite('sendPic.jpg', img)
@@ -94,15 +100,3 @@ class Calib(threading.Thread):
         print 'done'
         #self.conn.send("done")
         img.close()
-'''''
-calib = Calib(5991)
-
-try:
-    calib.run()
-
-except Exception, e:
-    print e.message
-
-raw_input()
-
-'''
