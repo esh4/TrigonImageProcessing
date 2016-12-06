@@ -1,8 +1,14 @@
 import socket
 import cv2
+import threading
+from GlobalData import HSV_highThresh
+from GlobalData import HSV_lowThresh
+from GlobalData import currentFrame
+from GlobalData import hsvImg
 
-class Calib:
+class Calib(threading.Thread):
     def __init__(self, PCport):
+        threading.Thread.__init__(self)
         self.port = PCport
 
     def run(self):
@@ -15,10 +21,14 @@ class Calib:
         self.connect()
         func = self.getCommands()
 
-        if func[0] == -1: pass
+        '''
+        getCommands returns the following list:
+            [(LH, LS, LV), (UH, US, UV), getImage, getHSVimg]
+        '''
+        if func[0] == (-1, -1, -1): pass
         else: HSV_lowThresh = func[0]
 
-        if func[1] == -1: pass
+        if func[1] == (-1, -1, -1): pass
         else: HSV_highThresh = func[1]
 
         if func[2] == False: pass
@@ -36,16 +46,34 @@ class Calib:
         conn, address = s.accept()
         self.conn = conn
         print address
+        return None
 
-'''
-PC commands:
-    [(lowThresh), (highThresh), getImage(bool), getHSVimg(bool)]
-'''
+    '''
+    PC commands:
+        [LH, LS, LV, UH, US, UV, getImage(bool), getHSVimg(bool)]
+    '''
 
     def getCommands(self, command=-1):
-        PCin = []
-        PCin.append(self.conn.recv(1024))
-        return PCin
+        PCin = self.conn.recv(1024).split(', ')
+
+        lThresh = ()
+        hThresh = ()
+
+        out = []
+
+        for i in range(3):
+            lThresh += int(i),
+
+        for i in range(3, 6):
+            hThresh += int(i),
+
+        out.append(lThresh)
+        out.append(hThresh)
+
+        for i in range(6, 7):
+            out.append(bool(i))
+
+        return out
 
     def saveImg(self, img):
         cv2.imwrite('sendPic.jpg', img)
@@ -66,3 +94,15 @@ PC commands:
         print 'done'
         #self.conn.send("done")
         img.close()
+'''''
+calib = Calib(5991)
+
+try:
+    calib.run()
+
+except Exception, e:
+    print e.message
+
+raw_input()
+
+'''

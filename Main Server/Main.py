@@ -1,12 +1,19 @@
-import cv2
-import threading
-import socket
 import numpy
+import Calibrate
+from GlobalData import HSV_highThresh
+from GlobalData import HSV_lowThresh
+from GlobalData import currentFrame
+from GlobalData import hsvImg
 
-currentFrame = numpy.array
-hsvImg = numpy.array
-HSV_lowThresh = ()
-HSV_highThresh = ()
-posData = []
+calib = Calibrate.Calib(5991)
+
+try:
+    calib.run()
+
+except Exception, e:
+    print e.message
+
+raw_input()
+
 
 
