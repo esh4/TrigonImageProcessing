@@ -1,9 +1,11 @@
 import cv2
-from Classes import ProcessImage
 import threading
 import socket
+import numpy
 
-HSVvalues = []
-frameData = []
-ImageProcess = ProcessImage()
+currentFrame = numpy.array
+HSV_lowThresh = ()
+HSV_highThresh = ()
+posData = []
+
 
