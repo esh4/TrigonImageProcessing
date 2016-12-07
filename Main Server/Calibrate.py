@@ -56,30 +56,30 @@ class Calib(threading.Thread):
     '''
 
     def getCommands(self, command=-1):
-        PCin = self.conn.recv(1024).split(', ')
-        print PCin
+        PCin = self.conn.recv(1024).split(',')
+        print "input from client: ", PCin
         lThresh = ()
         hThresh = ()
-
         out = []
 
         for i in range(3):
-            lThresh += int(i+1),
+            lThresh += tuple(PCin[i])
 
         for i in range(3, 6):
-            hThresh += int(i+1),
+            hThresh += tuple(PCin[i])
 
         out.append(lThresh)
         out.append(hThresh)
 
         for i in range(6, 8):
-            out.append(self.checkBool(i))
+            out.append(self.checkBool(PCin[i]))
 
         return out
 
     def checkBool(self, i):
         if i == 't': return True
         elif i == 'f': return False
+        else: return "blank"
 
     def saveImg(self, img):
         cv2.imwrite('sendPic.jpg', img)
