@@ -2,20 +2,24 @@ from GlobalData import posData
 from networktables import NetworkTable
 import logging
 import threading
-
+import time
+    
 class Comm(threading.Thread):
     def __init__(self):
-        threading.Thread.__init__()
+        threading.Thread.__init__(self)
+        NetworkTable.setClientMode()
+        NetworkTable.setIPAddress("10.59.90.221")  # Change the address to client IP
+        NetworkTable.initialize()
+        logging.basicConfig(level=logging.DEBUG)
+
+        self.sd = NetworkTable.getTable('SmartDashboard')
+
 
     def run(self):
-        logging.basicConfig(level=logging.DEBUG)
-        global posData
-
-        NetworkTable.setIPAddress("XX.XX.XX.XX")  # Change the address to client IP
-        NetworkTable.setClientMode()
-        NetworkTable.initialize()
-        sd = NetworkTable.getTable("SmartDashboard")
-
-        sd.putNumber('DistanceToReflector', posData[0])
-        sd.putNumber('AngleToReflector', posData[1])
+        while True:
+            print "befire"
+            self.sd.putNumber('DistanceToReflector', 2)
+            self.sd.putNumber('AngleToReflector', 3)
+            print "after"
+            time.sleep(1)
 

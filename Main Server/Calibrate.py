@@ -7,9 +7,9 @@ from GlobalData import currentFrame
 from GlobalData import hsvImg
 
 class Calib(threading.Thread):
-    def __init__(self, PCport):
+    def __init__(self, port):
         threading.Thread.__init__(self)
-        self.port = PCport
+        self.port = port
 
     def run(self):
 
@@ -19,35 +19,37 @@ class Calib(threading.Thread):
         global hsvImg
 
         self.connect()
-        func = self.getCommands()
 
-        '''
-        getCommands returns the following list:
-            [(LH, LS, LV), (UH, US, UV), getImage, getHSVimg]
-        '''
-        print "func ", func
+        while True:
+            func = self.getCommands()
 
-        if func[0] == (-1, -1, -1): pass
-        else: HSV_lowThresh = func[0]
+            '''
+            getCommands returns the following list:
+                [(LH, LS, LV), (UH, US, UV), getImage, getHSVimg]
+            '''
+            print "func ", func
 
-        if func[1] == (-1, -1, -1): pass
-        else: HSV_highThresh = func[1]
+            if func[0] == (-1, -1, -1): pass
+            else: HSV_lowThresh = func[0]
 
-        if func[2] == False: pass
-        else: self.sendImage(currentFrame)
+            if func[1] == (-1, -1, -1): pass
+            else: HSV_highThresh = func[1]
 
-        if func[3] == False: pass
-        else: self.sendImage(hsvImg)
+            if func[2] == False: pass
+            else: self.sendImage(currentFrame)
+
+            if func[3] == False: pass
+            else: self.sendImage(hsvImg)
 
     def connect(self):
         print "-> Ready"
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.bind(('0.0.0.0', self.port))
         s.listen(1)
+        print address
         print 'wait for connect'
         conn, address = s.accept()
         self.conn = conn
-        print address
         return None
 
     '''
@@ -81,7 +83,7 @@ class Calib(threading.Thread):
         elif i == 'f': return False
         else: return "blank"
 
-    def saveImg(self, img):
+    def saveImg(self, img):                     #don't run method, it is called from sendImage method.s
         cv2.imwrite('sendPic.jpg', img)
         return None
 

@@ -4,4 +4,4 @@ currentFrame = numpy.array
 hsvImg = numpy.array
 HSV_lowThresh = ()
 HSV_highThresh = ()
-posData = []
+posData = [4]
