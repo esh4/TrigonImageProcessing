@@ -1,63 +1,128 @@
 import cv2
+import os
 import numpy as np
-import threading
-from GlobalData import HSV_lowThresh
-from GlobalData import HSV_highThresh
 
-class Filtering(threading.Thread):
-    def __init__(self, img):
-        threading.Thread.__init__(self)
-        self.original_frame = img
-        self.hsvImg = None
-        self.FilteredLow = None
-        self.FilteredHigh = None
-        self.FilteredComplete= None
-        self.Filtered = None
+class Processing:
+    def toHSV(img):
+        return cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
-    def run(self):
-        global HSV_lowThresh
-        global HSV_highThresh
+    def blurAndContour(self, imgHSV, blurType):
+        if blurType == 'median':
+            blurred = cv2.medianBlur(imgHSV, 15)
+        #----------v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v----------#
+        contours = cv2.findContours(blurred, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)[0]
+        if len(contours) == 0:
+            print('blurAndContours // ERROR: No Contours Found')
+            return None
+        #----------^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^----------#
+        retImage = cv2.drawContours(blurred, contours, -1, (0, 255, 0), 3)
+        retTuple = (retImage, blurred, contours)
+        return retTuple
 
-        cam = cv2.VideoCapture(0)
-        _, f = cam.read()
+    def threshAndContour(self, imgHSV, threshLow, threshHigh):
+        threshed = cv2.inRange(imgHSV, threshLow, threshHigh)
+        #----------v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v----------#
+        contours = cv2.findContours(threshed, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)[0]
+        if len(contours)==0:
+            print('threshAndContours // ERROR: No Contours Found')
+            return None
+        #----------^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^----------#
+        retImage = cv2.drawContours(threshed, contours, -1, (0, 255, 0), 3)
+        retTuple = (retImage, threshed, contours)
+        return retTuple
 
-        self.threshHSV(self.toHSV(f), HSV_lowThresh, HSV_highThresh)
+    def bothAndContours(self, img, threshLow, threshHigh, blurType):
+        dud1, threshed = self.threshAndContour(img, threshLow, threshHigh)
+        dud2, BAT = self.blurAndContours(threshed, blurType)
+        #----------v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v----------#
+        contours = cv2.drawContours(BAT, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)[0]
+        if len(contours) == 0:
+            print('bothAndContours // ERROR: No Contours Found')
+            return None
+        #----------^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^----------#
+        wContours = cv2.drawContours(BAT, contours, -1, (0, 255, 0), 3)
+        retTuple = (wContours, BAT, contours)
+        return retTuple
 
+    def contour(self, imgHSV):
+        #----------v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v----------#
+        contours = cv2.drawContours(imgHSV, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)[0]
+        if len(contours) == 0:
+            print('contours // ERROR: No Contours Found')
+            return None
+        #----------^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^----------#
+        wContours = cv2.drawContours(imgHSV, contours, -1, (0, 255, 0), 3)
+        return tuple(wContours, contours)
 
-    def toHSV(self, frame):                                             #converts an image to HSV
-        return cv2.cvtColor(self.original_frame, cv2.COLOR_BGR2HSV)
-
-
-    def ThreshHSVCombined(self, frame,lowThresh, highThresh):
-        self.FilteredLow = cv2.inRange(self.hsvIMG, np.array(lowThresh[0]), np.array(lowThresh[1]))
-        self.FilteredHigh = cv2.inRange(self.hsvIMG, np.array(highThresh[0]), np.array(highThresh[1]))
-        self.Filtered = cv2.add(self.FilteredLow, self.FilteredHigh)
-
-    def threshHSV(self, frame, low_thresh, high_thresh):#lowThresh & highThresh are NP ARRAYS, threshs the hs image
-        return cv2.inRange(frame, low_thresh, high_thresh)
-
-    def findContours(self, frame):
-        __a, contours, hierarchy = cv2.findContours(threshed, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
-        empty = np.zeros((threshed.shape[0], threshed.shape[1], 3), np.uint8)
-        wContours = cv2.drawContours(empty, contours, -1, (0, 255, 0), 3)
-
-
-
-if __name__ == '__main__':
-    CapWeb = cv2.VideoCapture(0)
-    #while True:
-    _, frame = CapWeb.read()
-    CapWeb.release()
-    cv2.imshow("frame", frame)
-    c1 = Filtering(frame)
-    c1.toHSV()
-    threshed = c1.threshHSV(np.array([108, 117, 126]), np.array([180, 203, 255]))
-    median = cv2.medianBlur(threshed, 15)
-    cv2.imshow("median", median)
-    __a, contours, hierarchy = cv2.findContours(threshed,cv2.RETR_TREE,cv2.CHAIN_APPROX_NONE)
-    empty = np.zeros((threshed.shape[0],threshed.shape[1],3), np.uint8)
-    wContours = cv2.drawContours(empty, contours, -1, (0,255,0), 3)
-    cv2.imshow("w/ contours", wContours)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
-    CapWeb.release()
+    def filterRectBasic(self, imgHSV, Rw, Rh, func): #"blurAC", "threshAC", "bothAC", else
+        locatedTargets = []
+        targetRatio = Rw/Rh
+        
+        if func == 'blurAC':
+            res, blur, contours = self.blurAndContour(imgHSV, 'median')
+            width, height = cv2.GetSize(res)
+            blank = np.zeros((width, height), np.uint8)
+            try:
+                for c in contours:
+                    x, y, w, h = cv2.boundingRect()
+                    ratio = w/h
+                    rectRatio = Rw/Rh
+                    if 0.2 < ratio/rectRatio < 1.8:
+                        locatedTargets.append(c)
+                for t in locatedTargets:
+                    blank = cv2.drawContours(blank, t, -1, (0, 255, 0), 3)
+                return blank
+            except:
+                return None
+        #----------^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^----------#
+        elif func == 'threshAC':
+            res, thresh, contours = self.threshAndContour(imgHSV, np.array, np.array)
+            width, height = cv2.GetSize(res)
+            blank = np.zeros((width, height), np.uint8)
+            try:
+                for c in contours:
+                    x, y, w, h = cv2.boundingRect()
+                    ratio = w/h
+                    rectRatio = Rw/Rh
+                    if 0.2 < ratio/rectRatio < 1.8:
+                        locatedTargets.append(c)
+                for t in locatedTargets:
+                    blank = cv2.drawContours(blank, t, -1, (0, 255, 0), 3)
+                return blank
+            except:
+                return None
+        #----------^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^----------#
+        elif func == 'bothAC':
+            res, both, contours = self.bothAndContours(imgHSV, np.array([100, 120, 190]), np.array([110, 160, 230]), 'median')
+            width, height = cv2.GetSize(res)
+            blank = np.zeros((width, height), np.uint8)
+            try:
+                for c in contours:
+                    x, y, w, h = cv2.boundingRect()
+                    ratio = w/h
+                    rectRatio = Rw/Rh
+                    if 0.2 < ratio/rectRatio < 1.8:
+                        locatedTargets.append(c)
+                for t in locatedTargets:
+                    blank = cv2.drawContours(blank, t, -1, (0, 255, 0), 3)
+                return blank
+            except:
+                return None
+        #----------^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^----------#
+        else:
+            res, contours = self.contours(imgHSV)
+            width, height = cv2.GetSize(res)
+            blank = np.zeros((width, height), np.uint8)
+            try:
+                for c in contours:
+                    x, y, w, h = cv2.boundingRect()
+                    ratio = w/h
+                    rectRatio = Rw/Rh
+                    if 0.2 < ratio/rectRatio < 1.8:
+                        locatedTargets.append(c)
+                for t in locatedTargets:
+                    blank = cv2.drawContours(blank, t, -1, (0, 255, 0), 3)
+                return blank
+            except:
+                return None
+            

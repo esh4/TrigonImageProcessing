@@ -1,14 +1,13 @@
 import socket
-#import cv2
-import threading
-#from GlobalData import HSV_highThresh
-#from GlobalData import HSV_lowThresh
-#from GlobalData import currentFrame
-#from GlobalData import hsvImg
+import cv2
+import Processing
+from GlobalData import HSV_highThresh
+from GlobalData import HSV_lowThresh
+from GlobalData import currentFrame
+from GlobalData import hsvImg
 
-class Calib(threading.Thread):
+class Calib():
     def __init__(self, port):
-        threading.Thread.__init__(self)
         self.port = port
 
     def run(self):
@@ -39,7 +38,9 @@ class Calib(threading.Thread):
             else: self.sendImage(currentFrame)
 
             if func[3] == False: pass
-            else: self.sendImage(hsvImg)
+            else:
+                hsvImg = Processing.Processing.filterRectBasic(Processing.Processing.toHSV(cv2.imread('sendPic.jpg', -1)), 5, 4, 'bothAC')
+                self.sendImage(hsvImg)
 
     def connect(self):
         print( "-> Ready")
@@ -58,17 +59,24 @@ class Calib(threading.Thread):
     '''
 
     def getCommands(self, command=-1):
-        PCin = self.conn.recv(1024).split(',')
+        PCin = self.conn.recv(1024)
+        PCin = PCin .decode("utf-8").split(',')
         print( "input from client: ", PCin)
-        lThresh = ()
-        hThresh = ()
+        lThresh = []
+        hThresh = []
         out = []
 
         for i in range(3):
-            lThresh += tuple(PCin[i])
+            lThresh.append(PCin[i])
 
         for i in range(3, 6):
-            hThresh += tuple(PCin[i])
+            hThresh.append(PCin[i])
+
+        lThresh = tuple(lThresh)
+        hThresh = tuple(hThresh)
+
+        print(lThresh)
+        print(hThresh)
 
         out.append(lThresh)
         out.append(hThresh)
@@ -90,15 +98,17 @@ class Calib(threading.Thread):
     def sendImage(self, CVimg):
         self.saveImg(CVimg)
         img = open('sendPic.jpg', 'rb')
-        a = ''
+        a = b''
+        counter = 0
         for n in img:
             if len(a) == 100 or len(a) > 100:
                 self.conn.send(a)
-                a = ''
+                a = b''
                 a += n
             else:
                 a += n
+
         self.conn.send(a)
         print( 'done')
-        #self.conn.send("done")
+        self.conn.send(b"done")
         img.close()
