@@ -19,28 +19,29 @@ class Calib():
 
         self.connect()
 
-        while True:
-            func = self.getCommands()
+        #while True:
+        func = self.getCommands()
 
-            '''
-            getCommands returns the following list:
-                [(LH, LS, LV), (UH, US, UV), getImage, getHSVimg]
-            '''
-            print( "func ", func)
+        '''
+        getCommands returns the following list:
+            [(LH, LS, LV), (UH, US, UV), getImage, getHSVimg]
+        '''
+        print( "func ", func)
 
-            if func[0] == (-1, -1, -1): pass
-            else: HSV_lowThresh = func[0]
+        if func[0] == (-1, -1, -1): pass
+        else: HSV_lowThresh = func[0]
 
-            if func[1] == (-1, -1, -1): pass
-            else: HSV_highThresh = func[1]
+        if func[1] == (-1, -1, -1): pass
+        else: HSV_highThresh = func[1]
 
-            if func[2] == False: pass
-            else: self.sendImage(currentFrame)
+        if func[2] == False: pass
+        else: self.sendImage(currentFrame)
 
-            if func[3] == False: pass
-            else:
-                hsvImg = Processing.Processing.filterRectBasic(Processing.Processing.toHSV(cv2.imread('sendPic.jpg', -1)), 5, 4, 'bothAC')
-                self.sendImage(hsvImg)
+        if func[3] == False: pass
+        else:
+            pic = Processing.Processing.toHSV(cv2.imread('sendPic.jpg', -1))
+            hsvImg = Processing.Processing.filterRectBasic(Processing.Processing, pic, 5, 4, 'bothAC')
+            self.sendImage(hsvImg)
 
     def connect(self):
         print( "-> Ready")

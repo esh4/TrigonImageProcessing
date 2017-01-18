@@ -23,25 +23,26 @@ class Processing:
         threshed = cv2.inRange(imgHSV, threshLow, threshHigh)
         #----------v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v----------#
         contours = cv2.findContours(threshed, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)[0]
-        if len(contours)==0:
+        if len(contours) == 0:
             print('threshAndContours // ERROR: No Contours Found')
             return None
         #----------^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^----------#
-        retImage = cv2.drawContours(threshed, contours, -1, (0, 255, 0), 3)
+        contours = np.array(contours).reshape((-1, 1, 2)).astype(np.int32)
+        retImage = cv2.drawContours(threshed, [contours], -1, (0, 255, 0), 3)
         retTuple = (retImage, threshed, contours)
         return retTuple
 
     def bothAndContours(self, img, threshLow, threshHigh, blurType):
-        dud1, threshed = self.threshAndContour(img, threshLow, threshHigh)
-        dud2, BAT = self.blurAndContours(threshed, blurType)
+        dud1, threshed, contours = self.threshAndContour(self, img, threshLow, threshHigh)
+        dud2, blurred_and_threshed = self.blurAndContours(self, threshed, blurType)
         #----------v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v----------#
-        contours = cv2.drawContours(BAT, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)[0]
+        contours = cv2.drawContours(blurred_and_threshed, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)[0]
         if len(contours) == 0:
             print('bothAndContours // ERROR: No Contours Found')
             return None
         #----------^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^----------#
-        wContours = cv2.drawContours(BAT, contours, -1, (0, 255, 0), 3)
-        retTuple = (wContours, BAT, contours)
+        wContours = cv2.drawContours(blurred_and_threshed, contours, -1, (0, 255, 0), 3)
+        retTuple = (wContours, blurred_and_threshed, contours)
         return retTuple
 
     def contour(self, imgHSV):
@@ -59,7 +60,7 @@ class Processing:
         targetRatio = Rw/Rh
         
         if func == 'blurAC':
-            res, blur, contours = self.blurAndContour(imgHSV, 'median')
+            res, blur, contours = self.blurAndContour(self, imgHSV, 'median')
             width, height = cv2.GetSize(res)
             blank = np.zeros((width, height), np.uint8)
             try:
@@ -70,13 +71,13 @@ class Processing:
                     if 0.2 < ratio/rectRatio < 1.8:
                         locatedTargets.append(c)
                 for t in locatedTargets:
-                    blank = cv2.drawContours(blank, t, -1, (0, 255, 0), 3)
+                    blank = cv2.drawContours(blank, t, -1, (0, 255, 0))
                 return blank
             except:
                 return None
         #----------^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^----------#
         elif func == 'threshAC':
-            res, thresh, contours = self.threshAndContour(imgHSV, np.array, np.array)
+            res, thresh, contours = self.threshAndContour(self, imgHSV, np.array, np.array)
             width, height = cv2.GetSize(res)
             blank = np.zeros((width, height), np.uint8)
             try:
@@ -93,7 +94,7 @@ class Processing:
                 return None
         #----------^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^----------#
         elif func == 'bothAC':
-            res, both, contours = self.bothAndContours(imgHSV, np.array([100, 120, 190]), np.array([110, 160, 230]), 'median')
+            res, both, contours = self.bothAndContours(self, imgHSV, np.array([100, 120, 190]), np.array([110, 160, 230]), 'median')
             width, height = cv2.GetSize(res)
             blank = np.zeros((width, height), np.uint8)
             try:
