@@ -5,9 +5,8 @@ import threading
 import time
 
 
-class Comm(threading.Thread):
+class Comm():
     def __init__(self):
-        threading.Thread.__init__(self)
         logging.basicConfig(level=logging.DEBUG)
         NetworkTables.setClientMode()
         NetworkTables.setIPAddress("10.59.90.2")  # Change the address to client IP

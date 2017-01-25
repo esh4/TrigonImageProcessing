@@ -1,6 +1,7 @@
 import socket
 import cv2
 import Processing
+import numpy as np
 from GlobalData import HSV_highThresh
 from GlobalData import HSV_lowThresh
 from GlobalData import currentFrame
@@ -17,31 +18,38 @@ class Calib():
         global currentFrame
         global hsvImg
 
+        currentFrame = cv2.imread('original.jpg')
+
         self.connect()
 
-        #while True:
-        func = self.getCommands()
+        while True:
+            func = self.getCommands()
 
-        '''
-        getCommands returns the following list:
-            [(LH, LS, LV), (UH, US, UV), getImage, getHSVimg]
-        '''
-        print( "func ", func)
+            '''
+            getCommands returns the following list:
+                [(LH, LS, LV), (UH, US, UV), getImage, getHSVimg]
+            '''
+            #print( "func ", func)
 
-        if func[0] == (-1, -1, -1): pass
-        else: HSV_lowThresh = func[0]
+            if func[0] == (-1, -1, -1): pass
+            else:
+                HSV_lowThresh = list(func[0])
+                print(type(HSV_lowThresh))
 
-        if func[1] == (-1, -1, -1): pass
-        else: HSV_highThresh = func[1]
 
-        if func[2] == False: pass
-        else: self.sendImage(currentFrame)
+            if func[1] == (-1, -1, -1): pass
+            else: HSV_highThresh = list(func[1])
 
-        if func[3] == False: pass
-        else:
-            pic = Processing.Processing.toHSV(cv2.imread('sendPic.jpg', -1))
-            hsvImg = Processing.Processing.filterRectBasic(Processing.Processing, pic, 5, 4, 'bothAC')
-            self.sendImage(hsvImg)
+            if func[2] == False: pass
+            else: self.sendImage(currentFrame)
+
+            if func[3] == False: pass
+            else:
+                print('l-', HSV_lowThresh, 'h-', HSV_highThresh)
+                pic = cv2.imread('original.jpg')
+                pic = cv2.cvtColor(pic, cv2.COLOR_BGR2HSV)
+                self.sendImage(Processing.Processing.filterRectBasic(Processing.Processing, pic, 5, 4, 'threshAC'))
+
 
     def connect(self):
         print( "-> Ready")
@@ -60,9 +68,10 @@ class Calib():
     '''
 
     def getCommands(self, command=-1):
+        print ("waitng for input")
         PCin = self.conn.recv(1024)
         PCin = PCin .decode("utf-8").split(',')
-        print( "input from client: ", PCin)
+        #print( "input from client: ", PCin)
         lThresh = []
         hThresh = []
         out = []
@@ -72,6 +81,12 @@ class Calib():
 
         for i in range(3, 6):
             hThresh.append(PCin[i])
+
+        lThresh = map(int, lThresh)
+        hThresh = map(int, hThresh)
+
+        print(lThresh)
+        print(hThresh)
 
         lThresh = tuple(lThresh)
         hThresh = tuple(hThresh)
@@ -93,7 +108,7 @@ class Calib():
         else: return "blank"
 
     def saveImg(self, img):                     #don't run method, it is called from sendImage method.s
-        #cv2.imwrite('sendPic.jpg', img)
+        cv2.imwrite('sendPic.jpg', img)
         return None
 
     def sendImage(self, CVimg):
@@ -110,6 +125,6 @@ class Calib():
                 a += n
 
         self.conn.send(a)
-        print( 'done')
-        self.conn.send(b"done")
+        print('done')
+        self.conn.send(b'done')
         img.close()
